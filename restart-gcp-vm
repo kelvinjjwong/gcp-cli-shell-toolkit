@@ -1,0 +1,30 @@
+VM="xxxx-xxxxxx"
+clear
+gcloud config list
+echo "Press Ctrl+C if you need to stop at anytime."
+PROJ="`gcloud config list 2>/dev/null | grep "project = " | awk -F' = ' '{print $NF}'`"
+LST=`gcloud compute instances list | grep $VM`
+echo "$LST"
+
+INSTANACES="`echo "$LST" | grep $VM | awk -F' ' '{print $1}'`"
+
+for i in $INSTANCES; do
+    date
+    CLI="`gcloud compute instances list | grep $i | awk -F' ' '{print "gcloud compute instances stop "$1" --project='$PROJ' --zone="$2}'`"
+    echo "$CLI"
+    echo
+    eval "$CLI"
+    RTN=""
+    while [ "$RTN" != "RUNNING" ]; do
+        date
+        CHK="`gcloud compute instances list | grep $i`"
+        echo "$CHK"
+        RTN="`echo "$CHK" | awk -F' ' '{print $NF}'`"
+        sleep 30;
+    done;
+    echo
+    WAIT=60
+    echo "waiting $WAIT seconds for its fully restart, please monitor in Grafana"
+    echo
+    sleep $WAIT ;
+done;
